@@ -39,6 +39,13 @@
     .btn-warn { background: var(--warn); color: #271500; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-ghost { background: var(--card-2); color: var(--text); border: 1px solid var(--border); }
+    .mode-pill {
+      font-size: 0.76rem; padding: 4px 10px; border-radius: 999px; font-weight: 700;
+      border: 1px solid var(--border); background: var(--card-2); color: var(--muted);
+    }
+    .mode-pill.unlocked {
+      background: rgba(34, 197, 94, 0.16); color: #86efac; border-color: rgba(34, 197, 94, 0.45);
+    }
     .container { max-width: 980px; margin: 16px auto; padding: 0 16px; }
     .search-box {
       width: 100%; padding: 13px 15px; border-radius: 10px;
@@ -52,7 +59,7 @@
       padding: 7px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; font-size: 0.84rem;
     }
     .tab.active { background: var(--accent); color: #082f49; font-weight: 700; border-color: var(--accent); }
-    .stats { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.84rem; color: var(--muted); margin-bottom: 14px; }
+    .stats { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.84rem; color: var(--muted); margin-bottom: 14px; align-items: center; }
     .alert-unregistered {
       background: rgba(239, 68, 68, 0.12); border: 1px solid var(--danger);
       color: #fecaca; padding: 18px; border-radius: 12px; text-align: center; margin-top: 12px;
@@ -90,28 +97,9 @@
       width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border);
       background: var(--bg); color: var(--text); font-size: 0.92rem;
     }
-    #pinScreen {
-      position: fixed; inset: 0; background: var(--bg); z-index: 100;
-      display: flex; align-items: center; justify-content: center; padding: 20px;
-    }
-    .pin-box {
-      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-      padding: 24px; max-width: 340px; width: 100%; text-align: center;
-    }
   </style>
 </head>
 <body>
-
-  <!-- Bloqueo con PIN para la comisión -->
-  <div id="pinScreen">
-    <div class="pin-box">
-      <h2 style="margin-top:0;">Comisión Vehicular</h2>
-      <p class="sub" style="margin-bottom:14px;">Residencia Santa Ana de Coro — Ingresa el PIN</p>
-      <input type="password" id="pinInput" placeholder="PIN (ej. 2026)" style="text-align:center; margin-bottom:12px;" />
-      <button class="btn btn-primary" style="width:100%;" onclick="verificarPin()">Entrar</button>
-      <p id="pinError" style="color:var(--danger); font-size:0.82rem; margin-top:8px;"></p>
-    </div>
-  </div>
 
   <header>
     <div class="header-top">
@@ -119,9 +107,11 @@
         <h1>Control Vehicular — Santa Ana</h1>
         <div class="sub" id="syncStatus">Conectando con base de datos...</div>
       </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="abrirModal()">+ Nuevo</button>
-        <button class="btn btn-ghost" onclick="cargarCensoInicial()">Cargar Censo (87)</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <span id="editModeBadge" class="mode-pill">Modo consulta</span>
+        <button class="btn btn-ghost" id="toggleEditBtn" onclick="toggleModoEdicion()">Desbloquear PIN</button>
+        <button class="btn btn-primary" onclick="solicitarNuevo()">+ Nuevo</button>
+        <button class="btn btn-ghost" onclick="solicitarCenso()">Cargar Censo (87)</button>
       </div>
     </div>
   </header>
@@ -145,6 +135,20 @@
 
     <div class="stats" id="statsBar"></div>
     <div id="resultsContainer"></div>
+  </div>
+
+  <!-- Modal PIN para Agregar / Editar / Eliminar -->
+  <div class="modal-backdrop" id="pinModal">
+    <div class="modal" style="max-width:350px; text-align:center;">
+      <h3 style="margin-top:0;">PIN de Edición</h3>
+      <p class="sub" style="margin-bottom:12px;">Ingresa el PIN autorizado para agregar, editar o eliminar registros.</p>
+      <input type="password" id="editPinInput" placeholder="PIN" style="text-align:center; margin-bottom:10px;" />
+      <p id="editPinError" style="color:var(--danger); font-size:0.82rem; margin:4px 0 10px;"></p>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" onclick="cerrarPinModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="confirmarPinEdicion()">Confirmar</button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal Agregar / Editar -->
@@ -198,7 +202,8 @@
       getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs
     } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    const PIN_COMISION = "2026";
+    // Cambia este PIN cuando quieras modificar la clave de edición
+    const PIN_EDICION = "232387";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCLluu7vNDbWUlQN67CAtX30ecSCaKCBD0",
@@ -217,26 +222,72 @@
 
     let vehiculos = [];
     let tabActual = "todos";
+    let accionPendiente = null;
+    let edicionDesbloqueada = sessionStorage.getItem("edit_auth") === "1";
 
-    window.verificarPin = () => {
-      const val = document.getElementById("pinInput").value.trim();
-      if (val === PIN_COMISION) {
-        sessionStorage.setItem("auth_comision", "1");
-        document.getElementById("pinScreen").style.display = "none";
+    function actualizarIndicadorEdicion() {
+      const badge = document.getElementById("editModeBadge");
+      const btn = document.getElementById("toggleEditBtn");
+      if (edicionDesbloqueada) {
+        badge.textContent = "Edición activa";
+        badge.classList.add("unlocked");
+        btn.textContent = "Bloquear PIN";
       } else {
-        document.getElementById("pinError").textContent = "PIN incorrecto.";
+        badge.textContent = "Modo consulta";
+        badge.classList.remove("unlocked");
+        btn.textContent = "Desbloquear PIN";
+      }
+    }
+
+    function requerirPinEdicion(fn) {
+      if (edicionDesbloqueada) {
+        fn();
+        return;
+      }
+      accionPendiente = fn;
+      document.getElementById("editPinInput").value = "";
+      document.getElementById("editPinError").textContent = "";
+      document.getElementById("pinModal").classList.add("open");
+      setTimeout(() => document.getElementById("editPinInput").focus(), 50);
+    }
+
+    window.toggleModoEdicion = () => {
+      if (edicionDesbloqueada) {
+        edicionDesbloqueada = false;
+        sessionStorage.removeItem("edit_auth");
+        actualizarIndicadorEdicion();
+      } else {
+        requerirPinEdicion(() => {});
       }
     };
-    if (sessionStorage.getItem("auth_comision") === "1") {
-      document.getElementById("pinScreen").style.display = "none";
-    }
+
+    window.cerrarPinModal = () => {
+      accionPendiente = null;
+      document.getElementById("pinModal").classList.remove("open");
+    };
+
+    window.confirmarPinEdicion = () => {
+      const ingresado = document.getElementById("editPinInput").value.trim();
+      if (ingresado === PIN_EDICION) {
+        edicionDesbloqueada = true;
+        sessionStorage.setItem("edit_auth", "1");
+        actualizarIndicadorEdicion();
+        const fn = accionPendiente;
+        cerrarPinModal();
+        if (typeof fn === "function") fn();
+      } else {
+        document.getElementById("editPinError").textContent = "PIN incorrecto.";
+      }
+    };
+
+    actualizarIndicadorEdicion();
 
     onSnapshot(colRef, (snapshot) => {
       vehiculos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       document.getElementById("syncStatus").textContent = `Sincronizado en tiempo real (${vehiculos.length} registros)`;
       renderizar();
     }, (err) => {
-      document.getElementById("syncStatus").textContent = "Verifica que Firestore esté creado en modo prueba: " + err.message;
+      document.getElementById("syncStatus").textContent = "Error de conexión con Firestore: " + err.message;
     });
 
     window.cambiarTab = (tab, el) => {
@@ -286,7 +337,7 @@
           <div class="alert-unregistered">
             <h3>Vehículo NO registrado</h3>
             <p>No se encontraron coincidencias para "${q || tabActual}" en el censo actual.</p>
-            <button class="btn btn-primary" onclick="abrirModal('${q.toUpperCase()}')">+ Registrar este vehículo</button>
+            <button class="btn btn-primary" onclick="solicitarNuevo('${q.toUpperCase()}')">+ Registrar este vehículo</button>
           </div>`;
         return;
       }
@@ -309,14 +360,14 @@
               ${totalVecino > 1 ? `<div class="multi-note" style="margin-top:8px;">Este apartamento/copropietario registra <strong>${totalVecino} vehículos</strong>.</div>` : ""}
             </div>
             <div class="actions">
-              <button class="btn btn-warn" onclick='editarVehiculo(${JSON.stringify(v).replace(/'/g, "&#39;")})'>Editar</button>
-              <button class="btn btn-danger" onclick="eliminarVehiculo('${v.id}', '${(v.placa || v.marca).replace(/'/g, "")}')">Eliminar</button>
+              <button class="btn btn-warn" onclick='solicitarEditar(${JSON.stringify(v).replace(/'/g, "&#39;")})'>Editar</button>
+              <button class="btn btn-danger" onclick="solicitarEliminar('${v.id}', '${(v.placa || v.marca).replace(/'/g, "")}')">Eliminar</button>
             </div>
           </div>`;
       }).join("") + `</div>`;
     };
 
-    window.abrirModal = (prefillPlaca = "") => {
+    function abrirModal(prefillPlaca = "") {
       document.getElementById("modalTitle").textContent = "Registrar vehículo";
       document.getElementById("docId").value = "";
       document.getElementById("fApto").value = "";
@@ -327,9 +378,9 @@
       document.getElementById("fColor").value = "";
       document.getElementById("fTelefono").value = "";
       document.getElementById("formModal").classList.add("open");
-    };
+    }
 
-    window.editarVehiculo = (v) => {
+    function editarVehiculo(v) {
       document.getElementById("modalTitle").textContent = "Modificar vehículo";
       document.getElementById("docId").value = v.id;
       document.getElementById("fApto").value = v.apto || "";
@@ -340,34 +391,50 @@
       document.getElementById("fColor").value = v.color || "";
       document.getElementById("fTelefono").value = v.telefono || "";
       document.getElementById("formModal").classList.add("open");
+    }
+
+    window.solicitarNuevo = (prefillPlaca = "") => {
+      requerirPinEdicion(() => abrirModal(prefillPlaca));
+    };
+
+    window.solicitarEditar = (v) => {
+      requerirPinEdicion(() => editarVehiculo(v));
+    };
+
+    window.solicitarEliminar = (id, label) => {
+      requerirPinEdicion(async () => {
+        if (confirm(`¿Eliminar definitivamente el registro "${label}"?`)) {
+          await deleteDoc(doc(db, "vehiculos", id));
+        }
+      });
+    };
+
+    window.solicitarCenso = () => {
+      requerirPinEdicion(() => cargarCensoInicial());
     };
 
     window.cerrarModal = () => document.getElementById("formModal").classList.remove("open");
 
     window.guardarVehiculo = async (e) => {
       e.preventDefault();
-      const id = document.getElementById("docId").value;
-      const data = {
-        apto: document.getElementById("fApto").value.trim(),
-        propietario: document.getElementById("fPropietario").value.trim(),
-        tipo: document.getElementById("fTipo").value.trim(),
-        placa: document.getElementById("fPlaca").value.trim().toUpperCase(),
-        marca: document.getElementById("fMarca").value.trim().toUpperCase(),
-        color: document.getElementById("fColor").value.trim().toUpperCase(),
-        telefono: document.getElementById("fTelefono").value.trim()
-      };
-      if (id) {
-        await updateDoc(doc(db, "vehiculos", id), data);
-      } else {
-        await addDoc(colRef, data);
-      }
-      cerrarModal();
-    };
-
-    window.eliminarVehiculo = async (id, label) => {
-      if (confirm(`¿Eliminar definitivamente el registro "${label}"?`)) {
-        await deleteDoc(doc(db, "vehiculos", id));
-      }
+      requerirPinEdicion(async () => {
+        const id = document.getElementById("docId").value;
+        const data = {
+          apto: document.getElementById("fApto").value.trim(),
+          propietario: document.getElementById("fPropietario").value.trim(),
+          tipo: document.getElementById("fTipo").value.trim(),
+          placa: document.getElementById("fPlaca").value.trim().toUpperCase(),
+          marca: document.getElementById("fMarca").value.trim().toUpperCase(),
+          color: document.getElementById("fColor").value.trim().toUpperCase(),
+          telefono: document.getElementById("fTelefono").value.trim()
+        };
+        if (id) {
+          await updateDoc(doc(db, "vehiculos", id), data);
+        } else {
+          await addDoc(colRef, data);
+        }
+        cerrarModal();
+      });
     };
 
     const CENSO_OCTUBRE_2026 = [
@@ -460,7 +527,7 @@
       { apto: "1606", propietario: "Olga Torres", tipo: "CARRO/CAMIONETA", placa: "AA152JD", marca: "FIESTA POWER", color: "AZUL", telefono: "0414-9146271" }
     ];
 
-    window.cargarCensoInicial = async () => {
+    async function cargarCensoInicial() {
       const actuales = await getDocs(colRef);
       if (!actuales.empty) {
         if (!confirm(`Ya hay ${actuales.size} registros en la base. ¿Deseas agregar los 87 del censo de octubre 2026 de todas formas?`)) return;
@@ -469,7 +536,7 @@
         await addDoc(colRef, item);
       }
       alert("¡Censo de 87 vehículos cargado en Firestore!");
-    };
+    }
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
