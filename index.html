@@ -407,7 +407,7 @@
               ${otros.map(o => `
                 <div class="multi-item">
                   <div>
-                    <div><strong>${o.placa || "S/P"}</strong> · ${o.marca \vert{}\vert{} "-"} (${o.color || "-"})</div>
+                    <div><strong>${o.placa || "S/P"}</strong> · ${o.marca || "-"} (${o.color || "-"})</div>
                     <div class="multi-item-sub">${o.tipo || ""}</div>
                   </div>
                   <div class="mini-actions">
@@ -528,4 +528,94 @@
       { apto: "302", propietario: "Marlin Rodriguez", tipo: "MOTO", placa: "AL3T145", marca: "EMPIRE RK 200", color: "NEGRO", telefono: "0424-1801406" },
       { apto: "303", propietario: "Ludmila Garanton", tipo: "CARRO/CAMIONETA", placa: "BCC771", marca: "GRAND VITARA", color: "AZUL", telefono: "0424-1743309" },
       { apto: "305", propietario: "Mariano", tipo: "CARRO/CAMIONETA", placa: "YBK112", marca: "TOYOTA COROLLA", color: "VERDE", telefono: "0414-2490032" },
-      { apto: "305", propietario: "Mariano", tipo: "CARRO/CAMIONETA", placa: "
+      { apto: "305", propietario: "Mariano", tipo: "CARRO/CAMIONETA", placa: "MBH84Z", marca: "HONDA", color: "PLATEADO", telefono: "0414-2490032" },
+      { apto: "305", propietario: "Mariano", tipo: "MOTO", placa: "AK5K93E", marca: "HJ 150", color: "NEGRO", telefono: "0414-2490032" },
+      { apto: "402", propietario: "VICTOR GOMEZ", tipo: "CARRO/CAMIONETA", placa: "AA543FD", marca: "TERIOS", color: "AZUL", telefono: "0412-3356626" },
+      { apto: "405", propietario: "LUIS SOTO", tipo: "MOTO", placa: "AA9H92A", marca: "YAMAHA", color: "NEGRO", telefono: "0414-1819533" },
+      { apto: "405", propietario: "LUIS SOTO", tipo: "CARRO/CAMIONETA", placa: "AA538WO", marca: "TRAILBLAZER", color: "NEGRO", telefono: "0414-1819533" },
+      { apto: "406", propietario: "JAVIER", tipo: "CARRO/CAMIONETA", placa: "MBA18A", marca: "MITSUBISHI", color: "ROJO", telefono: "0412-9572826" },
+      { apto: "406", propietario: "JAVIER", tipo: "MOTO", placa: "AA1268K", marca: "EMPIRE SUPER SHADOW", color: "NEGRO", telefono: "0412-9572826" },
+      { apto: "501", propietario: "YERE COLMENARES", tipo: "CARRO/CAMIONETA", placa: "AA990CA", marca: "PEGEOUT", color: "", telefono: "0414-2716866" },
+      { apto: "501", propietario: "YERE COLMENARES", tipo: "CARRO/CAMIONETA", placa: "AA197RU", marca: "FORD FIESTA", color: "GRIS", telefono: "0414-2716866" },
+      { apto: "502", propietario: "Luis Lucas", tipo: "CARRO/CAMIONETA", placa: "DBY 97I", marca: "FORD ECO SPORT", color: "AZUL", telefono: "0412-6976181" },
+      { apto: "504", propietario: "JUANA MIJARES", tipo: "CARRO/CAMIONETA", placa: "JAS16X", marca: "HYUNDAY GETZ", color: "AZUL", telefono: "0412-6010586" },
+      { apto: "505", propietario: "Marieta", tipo: "CARRO/CAMIONETA", placa: "MFM19K", marca: "CALIVER", color: "GRIS", telefono: "0412-2985469" },
+      { apto: "505", propietario: "Marieta", tipo: "CARRO/CAMIONETA", placa: "VCF40X", marca: "AVEO", color: "PLATA", telefono: "0412-2985470" },
+      { apto: "505", propietario: "Marieta", tipo: "CARRO/CAMIONETA", placa: "BBN90E", marca: "GRAND VITARA", color: "PLATA", telefono: "0412-2985469" },
+      { apto: "506", propietario: "MANUEL GUEDEZ", tipo: "MOTO", placa: "A10P77E", marca: "BERA KAVAK", color: "ROJO", telefono: "4144014588" },
+      { apto: "601", propietario: "Any Herrera", tipo: "CARRO/CAMIONETA", placa: "AA588FN", marca: "TERIOS", color: "ROJO", telefono: "0414-2565792" },
+      { apto: "603", propietario: "YUDITH LOPEZ", tipo: "CARRO/CAMIONETA", placa: "AHI66ED", marca: "FIAT CRONOS", color: "PLATA", telefono: "" },
+      { apto: "604", propietario: "JHONATAN", tipo: "MOTO", placa: "AG4Y75T", marca: "EMPIRE OWEN", color: "AZUL", telefono: "0424-1287416" },
+      { apto: "605", propietario: "Luisa Quevedo", tipo: "CARRO/CAMIONETA", placa: "ACN03U", marca: "FIAT 147", color: "BEIGE", telefono: "0424-1729591" },
+      { apto: "605", propietario: "Luisa Quevedo", tipo: "CARRO/CAMIONETA", placa: "AB575LD", marca: "FORD ECO SPORT", color: "PLATA", telefono: "0424-1729591" },
+      { apto: "605", propietario: "Luisa Quevedo", tipo: "MOTO", placa: "AF4J76U", marca: "BERA R1", color: "ROJO", telefono: "0412-9008163" },
+      { apto: "701", propietario: "Felix Peña", tipo: "CARRO/CAMIONETA", placa: "APO56EB", marca: "TOYOTA CROSS", color: "BLANCO", telefono: "0414-2199726" },
+      { apto: "703", propietario: "Neptali Fernandez", tipo: "CARRO/CAMIONETA", placa: "AK150TA", marca: "ORINOCO", color: "BLANCO", telefono: "0416-6111694 / 0424-2208751" },
+      { apto: "703", propietario: "Neptali Fernandez", tipo: "CARRO/CAMIONETA", placa: "AH924CD", marca: "CROSS", color: "PLATEADO", telefono: "0416-6111694 / 0424-2208751" },
+      { apto: "703", propietario: "Neptali Fernandez", tipo: "CARRO/CAMIONETA", placa: "AA314BJ", marca: "YARIS", color: "AZUL", telefono: "0416-6111694 / 0424-2208751" },
+      { apto: "802", propietario: "YANETH SALAZAR", tipo: "CARRO/CAMIONETA", placa: "DAZ40T", marca: "TOYOTA COROLLA", color: "DORADO", telefono: "" },
+      { apto: "805", propietario: "No especificado", tipo: "MOTO", placa: "AX6166F", marca: "BERA KAVAK", color: "NEGRO", telefono: "" },
+      { apto: "901", propietario: "Valentin", tipo: "CARRO/CAMIONETA", placa: "AG872AA", marca: "FORD FIESTA", color: "AZUL", telefono: "0412-9702126" },
+      { apto: "901", propietario: "Valentin", tipo: "MOTO", placa: "AA7J65P", marca: "EMPIRE HORSEII", color: "AZUL", telefono: "0412-9702127" },
+      { apto: "902", propietario: "Lisbeth de Santamaria/Alfonzo Santamaria", tipo: "CARRO/CAMIONETA", placa: "AD226SS", marca: "AVEO", color: "NEGRO", telefono: "0424-2153592 / 0414-2047182" },
+      { apto: "902", propietario: "Lisbeth de Santamaria/Alfonzo Santamaria", tipo: "CARRO/CAMIONETA", placa: "AA346CD", marca: "EPICA", color: "VERDE", telefono: "0424-2153592 / 0414-2047182" },
+      { apto: "902", propietario: "Lisbeth de Santamaria/Alfonzo Santamaria", tipo: "MOTO", placa: "AJ4X44K", marca: "BERA", color: "AZUL", telefono: "0424-2153592 / 0414-2047182" },
+      { apto: "903", propietario: "Jonathan Arvelo", tipo: "CARRO/CAMIONETA", placa: "AI622CK", marca: "OPTRA", color: "GRIS", telefono: "0412-3178303" },
+      { apto: "903", propietario: "Jonathan Arvelo", tipo: "MOTO", placa: "AH2D82M", marca: "BERA VIPER", color: "GRIS", telefono: "0412-5382683" },
+      { apto: "904", propietario: "NAURY BRAVO", tipo: "CARRO/CAMIONETA", placa: "MEN55M", marca: "AVEO", color: "GRIS", telefono: "0414-1198212" },
+      { apto: "906", propietario: "Junior Jaimes", tipo: "CARRO/CAMIONETA", placa: "AF699FG", marca: "ORINOCO", color: "NEGRO", telefono: "0424-1692492" },
+      { apto: "1002", propietario: "Leiker Tortoza", tipo: "CARRO/CAMIONETA", placa: "AB962II", marca: "TOYOTA MACHITO", color: "BEIGE", telefono: "0414-2067070" },
+      { apto: "1002", propietario: "Leiker Tortoza", tipo: "MOTO", placa: "S/P AT3M38M", marca: "BERA", color: "NEGRO", telefono: "0414-2067070" },
+      { apto: "1003", propietario: "Jose Luis Luna", tipo: "CARRO/CAMIONETA", placa: "AA130MK", marca: "OPTRA", color: "GRIS", telefono: "0412-7348108" },
+      { apto: "1004", propietario: "Ulises Sojo", tipo: "CARRO/CAMIONETA", placa: "C0605T", marca: "DAEWOO", color: "CIELO", telefono: "0416-7184426" },
+      { apto: "1006", propietario: "EDITH", tipo: "CARRO/CAMIONETA", placa: "AF546SM", marca: "CHERY ARAUCA", color: "PLATA", telefono: "0412-2930511" },
+      { apto: "1102", propietario: "Maria Eugenia Peña", tipo: "CARRO/CAMIONETA", placa: "ACO38PD", marca: "EXPLORER", color: "BLANCO", telefono: "0424-1522118" },
+      { apto: "1103", propietario: "STEPHANY CORONADO", tipo: "CARRO/CAMIONETA", placa: "OAJ475", marca: "TOYOTA TERIOS", color: "PLATA", telefono: "0412-4306035" },
+      { apto: "1103", propietario: "STEPHANY CORONADO", tipo: "MOTO", placa: "AY9X45G", marca: "EMPIRE OUTLOOK", color: "BLANCO", telefono: "0412-4306036" },
+      { apto: "1104", propietario: "Neptali Vivas", tipo: "CARRO/CAMIONETA", placa: "ARC75C", marca: "MITSUBISHI", color: "GRIS", telefono: "0412-3760368" },
+      { apto: "1105", propietario: "ANGEL VILORIA", tipo: "MOTO", placa: "ALONE51E", marca: "BERA RUNNER", color: "NEGRO", telefono: "0412-9100126" },
+      { apto: "1203", propietario: "Francisco Franco", tipo: "CARRO/CAMIONETA", placa: "AK587BA", marca: "CHERY", color: "DORADO", telefono: "0424-2796406" },
+      { apto: "1203", propietario: "Francisco Franco", tipo: "MOTO", placa: "AK2L79D", marca: "HJ", color: "AMARILLA", telefono: "0424-2796406" },
+      { apto: "1204", propietario: "ARNALDO VALERA", tipo: "CARRO/CAMIONETA", placa: "AB965CI", marca: "CHEROKKE JEEP", color: "AZUL", telefono: "0412-6123215" },
+      { apto: "1206", propietario: "MARIETTA", tipo: "CARRO/CAMIONETA", placa: "CAF79X", marca: "TERIOS", color: "AZUL", telefono: "0424-1272650" },
+      { apto: "1303", propietario: "Ramses", tipo: "MOTO", placa: "AEOS45R", marca: "BERA RUNNER", color: "BLANCO", telefono: "0424-2387054" },
+      { apto: "1305", propietario: "No especificado", tipo: "MOTO", placa: "AR5Y24M", marca: "AVA JAGUAR", color: "FUCSIA", telefono: "" },
+      { apto: "1306", propietario: "DAILUBIS ZAMBRANO", tipo: "CARRO/CAMIONETA", placa: "AD4AB2A", marca: "SILVERADO", color: "NEGRO", telefono: "0414-1229437" },
+      { apto: "1306", propietario: "DAILUBIS ZAMBRANO", tipo: "CARRO/CAMIONETA", placa: "DAJ22J", marca: "COROLLA", color: "GRIS", telefono: "0414-1229437" },
+      { apto: "1306", propietario: "DAILUBIS ZAMBRANO", tipo: "CARRO/CAMIONETA", placa: "AK524AG", marca: "HYUNDAY EXCEL", color: "PLATA", telefono: "0414-1229438" },
+      { apto: "1402", propietario: "BRUNO/CAROLINA", tipo: "CARRO/CAMIONETA", placa: "AH165RM", marca: "CHERY ARAUCA", color: "PLATA", telefono: "0412-2948406" },
+      { apto: "1402", propietario: "BRUNO/CAROLINA", tipo: "CARRO/CAMIONETA", placa: "AI658FK", marca: "JEEP", color: "GRIS", telefono: "0412-7381703" },
+      { apto: "1402", propietario: "BRUNO/CAROLINA", tipo: "MOTO", placa: "AM8501N", marca: "EMPIRE RK 200", color: "NEGRO", telefono: "0412-4882233" },
+      { apto: "1403", propietario: "Jorge Morr", tipo: "CARRO/CAMIONETA", placa: "S/P", marca: "TUCSON", color: "NEGRO", telefono: "0412-4062959" },
+      { apto: "1403", propietario: "Jorge Morr", tipo: "MOTO", placa: "AW4F04V", marca: "BERA SBR", color: "AZUL", telefono: "0412-4062959" },
+      { apto: "1404", propietario: "Alba Villalobos", tipo: "CARRO/CAMIONETA", placa: "WAB-85N", marca: "FIAT PALIO", color: "PLATEADO", telefono: "0414-1634474 / 0416-8294581" },
+      { apto: "1405", propietario: "Luis Guevara", tipo: "MOTO", placa: "AH5176V", marca: "SKIGO SG150", color: "BLANCO", telefono: "0414-3391378" },
+      { apto: "1405", propietario: "Luis Guevara", tipo: "MOTO", placa: "AF6D61G", marca: "OUTLOOK", color: "AZUL", telefono: "0414-3391378" },
+      { apto: "1406", propietario: "Henry Garcia", tipo: "CARRO/CAMIONETA", placa: "AA761KL", marca: "HONDA CIVIC", color: "DORADO", telefono: "0412-9613485" },
+      { apto: "1501", propietario: "Jose Luis Salinas", tipo: "MOTO", placa: "AMBC55N", marca: "HORSE", color: "NEGRO", telefono: "0424-1805348" },
+      { apto: "1501", propietario: "Jose Luis Salinas", tipo: "MOTO", placa: "AABL91R", marca: "HORSE", color: "AZUL", telefono: "0424-1805348" },
+      { apto: "1503", propietario: "Gaby", tipo: "CARRO/CAMIONETA", placa: "A0722XB", marca: "RENAULT LOGAN", color: "PLATA", telefono: "0412-8225214" },
+      { apto: "1503", propietario: "IKEL", tipo: "CARRO/CAMIONETA", placa: "ATK958", marca: "DODGE ASPEN", color: "BLANCO", telefono: "" },
+      { apto: "1604", propietario: "María González", tipo: "CARRO/CAMIONETA", placa: "AC808HS", marca: "YARIS", color: "PLATEADO", telefono: "0426-3124322" },
+      { apto: "1605", propietario: "Jorge Rivas", tipo: "CARRO/CAMIONETA", placa: "AE076UV", marca: "FIAT", color: "GRIS", telefono: "0424-1679997" },
+      { apto: "1605", propietario: "Evelin Andrade de R", tipo: "CARRO/CAMIONETA", placa: "AF839JK", marca: "MAZDA", color: "VERDE", telefono: "0414-3899556" },
+      { apto: "1606", propietario: "Olga Torres", tipo: "CARRO/CAMIONETA", placa: "AA152JD", marca: "FIESTA POWER", color: "AZUL", telefono: "0414-9146271" }
+    ];
+
+    async function cargarCensoInicial() {
+      const actuales = await getDocs(colRef);
+      if (!actuales.empty) {
+        if (!confirm(`Ya hay ${actuales.size} registros en la base. ¿Deseas agregar los 87 del censo de octubre 2026 de todas formas?`)) return;
+      }
+      for (const item of CENSO_OCTUBRE_2026) {
+        await addDoc(colRef, item);
+      }
+      alert("¡Censo de 87 vehículos cargado en Firestore!");
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
