@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Vehicular — Residencia Santa Ana</title>
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-2: #273549;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; }
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border); padding: 14px 16px;
+    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    h1 { margin: 0; font-size: 1.15rem; }
+    .sub { font-size: 0.8rem; color: var(--muted); }
+    .btn {
+      border: none; border-radius: 8px; padding: 9px 13px; font-weight: 600;
+      cursor: pointer; font-size: 0.88rem; transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background: var(--accent); color: #082f49; }
+    .btn-success { background: var(--ok); color: #052e16; }
+    .btn-warn { background: var(--warn); color: #271500; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-ghost { background: var(--card-2); color: var(--text); border: 1px solid var(--border); }
+    .container { max-width: 980px; margin: 16px auto; padding: 0 16px; }
+    .search-box {
+      width: 100%; padding: 13px 15px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--card); color: var(--text);
+      font-size: 1rem; margin-bottom: 12px;
+    }
+    .search-box:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; }
+    .tab {
+      background: var(--card); color: var(--muted); border: 1px solid var(--border);
+      padding: 7px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; font-size: 0.84rem;
+    }
+    .tab.active { background: var(--accent); color: #082f49; font-weight: 700; border-color: var(--accent); }
+    .stats { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.84rem; color: var(--muted); margin-bottom: 14px; }
+    .alert-unregistered {
+      background: rgba(239, 68, 68, 0.12); border: 1px solid var(--danger);
+      color: #fecaca; padding: 18px; border-radius: 12px; text-align: center; margin-top: 12px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    }
+    .badge {
+      display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 3px 8px;
+      border-radius: 6px; background: var(--card-2); color: var(--accent);
+    }
+    .placa { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.5px; color: #fff; }
+    .meta { font-size: 0.88rem; color: #e2e8f0; line-height: 1.45; }
+    .meta span { color: var(--muted); }
+    .multi-note {
+      font-size: 0.78rem; color: #fde68a; background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.4); padding: 6px 8px; border-radius: 8px;
+    }
+    .actions { display: flex; gap: 8px; margin-top: 6px; }
+    .actions button { flex: 1; padding: 7px 10px; font-size: 0.8rem; }
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75);
+      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      width: 100%; max-width: 480px; padding: 20px; max-height: 92vh; overflow-y: auto;
+    }
+    .form-group { margin-bottom: 11px; }
+    label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+    input, select {
+      width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 0.92rem;
+    }
+    #pinScreen {
+      position: fixed; inset: 0; background: var(--bg); z-index: 100;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .pin-box {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 24px; max-width: 340px; width: 100%; text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Bloqueo con PIN para la comisión -->
+  <div id="pinScreen">
+    <div class="pin-box">
+      <h2 style="margin-top:0;">Comisión Vehicular</h2>
+      <p class="sub" style="margin-bottom:14px;">Residencia Santa Ana de Coro — Ingresa el PIN</p>
+      <input type="password" id="pinInput" placeholder="PIN (ej. 2026)" style="text-align:center; margin-bottom:12px;" />
+      <button class="btn btn-primary" style="width:100%;" onclick="verificarPin()">Entrar</button>
+      <p id="pinError" style="color:var(--danger); font-size:0.82rem; margin-top:8px;"></p>
+    </div>
+  </div>
+
+  <header>
+    <div class="header-top">
+      <div>
+        <h1>Control Vehicular — Santa Ana</h1>
+        <div class="sub" id="syncStatus">Conectando con base de datos...</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="abrirModal()">+ Nuevo</button>
+        <button class="btn btn-ghost" onclick="cargarCensoInicial()">Cargar Censo (87)</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <input
+      type="search"
+      id="searchInput"
+      class="search-box"
+      placeholder="Buscar por placa, marca/modelo, apto (ej. 1406), vecino o teléfono..."
+      oninput="renderizar()"
+    />
+
+    <div class="tabs">
+      <button class="tab active" data-tab="todos" onclick="cambiarTab('todos', this)">Todos</button>
+      <button class="tab" data-tab="carro" onclick="cambiarTab('carro', this)">Carros / Camionetas</button>
+      <button class="tab" data-tab="moto" onclick="cambiarTab('moto', this)">Motos</button>
+      <button class="tab" data-tab="multi" onclick="cambiarTab('multi', this)">+1 Vehículo</button>
+      <button class="tab" data-tab="mixto" onclick="cambiarTab('mixto', this)">Carro y Moto</button>
+    </div>
+
+    <div class="stats" id="statsBar"></div>
+    <div id="resultsContainer"></div>
+  </div>
+
+  <!-- Modal Agregar / Editar -->
+  <div class="modal-backdrop" id="formModal">
+    <div class="modal">
+      <h3 id="modalTitle" style="margin-top:0;">Registrar vehículo</h3>
+      <form onsubmit="guardarVehiculo(event)">
+        <input type="hidden" id="docId" />
+        <div class="form-group">
+          <label>Apartamento / Piso</label>
+          <input type="text" id="fApto" required placeholder="Ej. 1406 o 3" />
+        </div>
+        <div class="form-group">
+          <label>Nombre del Copropietario</label>
+          <input type="text" id="fPropietario" required placeholder="Ej. Henry Garcia" />
+        </div>
+        <div class="form-group">
+          <label>Tipo de Vehículo</label>
+          <select id="fTipo" required>
+            <option value="CARRO/CAMIONETA">CARRO/CAMIONETA</option>
+            <option value="MOTO">MOTO</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Placa</label>
+          <input type="text" id="fPlaca" required placeholder="Ej. AA761KL o S/P" />
+        </div>
+        <div class="form-group">
+          <label>Marca / Modelo</label>
+          <input type="text" id="fMarca" required placeholder="Ej. HONDA CIVIC" />
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input type="text" id="fColor" required placeholder="Ej. DORADO" />
+        </div>
+        <div class="form-group">
+          <label>Número Telefónico</label>
+          <input type="text" id="fTelefono" placeholder="Ej. 0412-9613485" />
+        </div>
+        <div class="actions" style="margin-top:14px;">
+          <button type="button" class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn-success">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDocs
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const PIN_COMISION = "2026";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCLluu7vNDbWUlQN67CAtX30ecSCaKCBD0",
+      authDomain: "control-vehicular-b2df2.firebaseapp.com",
+      databaseURL: "https://control-vehicular-b2df2-default-rtdb.firebaseio.com",
+      projectId: "control-vehicular-b2df2",
+      storageBucket: "control-vehicular-b2df2.firebasestorage.app",
+      messagingSenderId: "162573164540",
+      appId: "1:162573164540:web:61f4aca5a2e10805b09c79",
+      measurementId: "G-FV8E9Y9VG7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, "vehiculos");
+
+    let vehiculos = [];
+    let tabActual = "todos";
+
+    window.verificarPin = () => {
+      const val = document.getElementById("pinInput").value.trim();
+      if (val === PIN_COMISION) {
+        sessionStorage.setItem("auth_comision", "1");
+        document.getElementById("pinScreen").style.display = "none";
+      } else {
+        document.getElementById("pinError").textContent = "PIN incorrecto.";
+      }
+    };
+    if (sessionStorage.getItem("auth_comision") === "1") {
+      document.getElementById("pinScreen").style.display = "none";
+    }
+
+    onSnapshot(colRef, (snapshot) => {
+      vehiculos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      document.getElementById("syncStatus").textContent = `Sincronizado en tiempo real (${vehiculos.length} registros)`;
+      renderizar();
+    }, (err) => {
+      document.getElementById("syncStatus").textContent = "Verifica que Firestore esté creado en modo prueba: " + err.message;
+    });
+
+    window.cambiarTab = (tab, el) => {
+      tabActual = tab;
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      el.classList.add("active");
+      renderizar();
+    };
+
+    window.renderizar = () => {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const countByKey = {};
+      const typesByKey = {};
+
+      vehiculos.forEach(v => {
+        const key = `${(v.apto || "").trim()}|${(v.propietario || "").trim().toLowerCase()}`;
+        countByKey[key] = (countByKey[key] || 0) + 1;
+        typesByKey[key] = typesByKey[key] || new Set();
+        typesByKey[key].add((v.tipo || "").toUpperCase().includes("MOTO") ? "MOTO" : "CARRO");
+      });
+
+      let filtrados = vehiculos.filter(v => {
+        const key = `${(v.apto || "").trim()}|${(v.propietario || "").trim().toLowerCase()}`;
+        const esMoto = (v.tipo || "").toUpperCase().includes("MOTO");
+        const tieneMulti = countByKey[key] > 1;
+        const tieneMixto = typesByKey[key] && typesByKey[key].size > 1;
+
+        if (tabActual === "carro" && esMoto) return false;
+        if (tabActual === "moto" && !esMoto) return false;
+        if (tabActual === "multi" && !tieneMulti) return false;
+        if (tabActual === "mixto" && !tieneMixto) return false;
+
+        if (!q) return true;
+        const texto = `${v.apto} ${v.propietario} ${v.tipo} ${v.placa} ${v.marca} ${v.color} ${v.telefono}`.toLowerCase();
+        return texto.includes(q);
+      });
+
+      filtrados.sort((a, b) => String(a.apto).localeCompare(String(b.apto), undefined, { numeric: true }));
+
+      document.getElementById("statsBar").innerHTML =
+        `<span>Mostrando: <strong>${filtrados.length}</strong></span>` +
+        `<span>Total base: <strong>${vehiculos.length}</strong></span>`;
+
+      const cont = document.getElementById("resultsContainer");
+      if (filtrados.length === 0) {
+        cont.innerHTML = `
+          <div class="alert-unregistered">
+            <h3>Vehículo NO registrado</h3>
+            <p>No se encontraron coincidencias para "${q || tabActual}" en el censo actual.</p>
+            <button class="btn btn-primary" onclick="abrirModal('${q.toUpperCase()}')">+ Registrar este vehículo</button>
+          </div>`;
+        return;
+      }
+
+      cont.innerHTML = `<div class="grid">` + filtrados.map(v => {
+        const key = `${(v.apto || "").trim()}|${(v.propietario || "").trim().toLowerCase()}`;
+        const totalVecino = countByKey[key] || 1;
+        return `
+          <div class="card">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <span class="placa">${v.placa || "S/P"}</span>
+                <span class="badge">Apto ${v.apto || "-"} · ${v.tipo || ""}</span>
+              </div>
+              <div class="meta" style="margin-top:8px;">
+                <div><span>Marca/Modelo:</span> <strong>${v.marca || "-"}</strong> (${v.color || "-"})</div>
+                <div><span>Copropietario:</span> ${v.propietario || "-"}</div>
+                <div><span>Teléfono:</span> ${v.telefono || "No registrado"}</div>
+              </div>
+              ${totalVecino > 1 ? `<div class="multi-note" style="margin-top:8px;">Este apartamento/copropietario registra <strong>${totalVecino} vehículos</strong>.</div>` : ""}
+            </div>
+            <div class="actions">
+              <button class="btn btn-warn" onclick='editarVehiculo(${JSON.stringify(v).replace(/'/g, "&#39;")})'>Editar</button>
+              <button class="btn btn-danger" onclick="eliminarVehiculo('${v.id}', '${(v.placa || v.marca).replace(/'/g, "")}')">Eliminar</button>
+            </div>
+          </div>`;
+      }).join("") + `</div>`;
+    };
+
+    window.abrirModal = (prefillPlaca = "") => {
+      document.getElementById("modalTitle").textContent = "Registrar vehículo";
+      document.getElementById("docId").value = "";
+      document.getElementById("fApto").value = "";
+      document.getElementById("fPropietario").value = "";
+      document.getElementById("fTipo").value = "CARRO/CAMIONETA";
+      document.getElementById("fPlaca").value = prefillPlaca;
+      document.getElementById("fMarca").value = "";
+      document.getElementById("fColor").value = "";
+      document.getElementById("fTelefono").value = "";
+      document.getElementById("formModal").classList.add("open");
+    };
+
+    window.editarVehiculo = (v) => {
+      document.getElementById("modalTitle").textContent = "Modificar vehículo";
+      document.getElementById("docId").value = v.id;
+      document.getElementById("fApto").value = v.apto || "";
+      document.getElementById("fPropietario").value = v.propietario || "";
+      document.getElementById("fTipo").value = (v.tipo || "").toUpperCase().includes("MOTO") ? "MOTO" : "CARRO/CAMIONETA";
+      document.getElementById("fPlaca").value = v.placa || "";
+      document.getElementById("fMarca").value = v.marca || "";
+      document.getElementById("fColor").value = v.color || "";
+      document.getElementById("fTelefono").value = v.telefono || "";
+      document.getElementById("formModal").classList.add("open");
+    };
+
+    window.cerrarModal = () => document.getElementById("formModal").classList.remove("open");
+
+    window.guardarVehiculo = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("docId").value;
+      const data = {
+        apto: document.getElementById("fApto").value.trim(),
+        propietario: document.getElementById("fPropietario").value.trim(),
+        tipo: document.getElementById("fTipo").value.trim(),
+        placa: document.getElementById("fPlaca").value.trim().toUpperCase(),
+        marca: document.getElementById("fMarca").value.trim().toUpperCase(),
+        color: document.getElementById("fColor").value.trim().toUpperCase(),
+        telefono: document.getElementById("fTelefono").value.trim()
+      };
+      if (id) {
+        await updateDoc(doc(db, "vehiculos", id), data);
+      } else {
+        await addDoc(colRef, data);
+      }
+      cerrarModal();
+    };
+
+    window.eliminarVehiculo = async (id, label) => {
+      if (confirm(`¿Eliminar definitivamente el registro "${label}"?`)) {
+        await deleteDoc(doc(db, "vehiculos", id));
+      }
+    };
+
+    const CENSO_OCTUBRE_2026 = [
+      { apto: "3", propietario: "German Josep", tipo: "CARRO/CAMIONETA", placa: "AC128AN", marca: "DF5K", color: "GRIS", telefono: "0416-8219600" },
+      { apto: "101", propietario: "Arnaldo Hernandez", tipo: "CARRO/CAMIONETA", placa: "SBE37C", marca: "TOYOTA MERU", color: "BLANCO", telefono: "0424-1325740" },
+      { apto: "101", propietario: "Arnaldo Hernandez", tipo: "CARRO/CAMIONETA", placa: "A76AA7G", marca: "MAZDA PICK-UP", color: "BEIGE", telefono: "0424-1325740" },
+      { apto: "101", propietario: "Arnaldo Hernandez", tipo: "MOTO", placa: "AJ8A56K", marca: "CYCLONE RX 401", color: "GRIS/NEGRO", telefono: "0424-1325741" },
+      { apto: "102", propietario: "Gabriela Gómez", tipo: "MOTO", placa: "AH3X69E", marca: "BERA", color: "NEGRO", telefono: "0414-2638945" },
+      { apto: "105", propietario: "Freddy Zambrano", tipo: "MOTO", placa: "AV9W33V", marca: "BERA", color: "NEGRO", telefono: "0414-2015505" },
+      { apto: "105", propietario: "Freddy Zambrano", tipo: "CARRO/CAMIONETA", placa: "MBO27A", marca: "MITSUBISHI", color: "VERDE", telefono: "0414-2015505" },
+      { apto: "105", propietario: "Freddy Zambrano", tipo: "CARRO/CAMIONETA", placa: "AA929YW", marca: "AVEO", color: "BEIGE", telefono: "0414-2015505" },
+      { apto: "106", propietario: "YARA", tipo: "CARRO/CAMIONETA", placa: "AHE70W", marca: "PEGEOUT", color: "VINOTINTO", telefono: "" },
+      { apto: "205", propietario: "JOSE LUIS MARIN", tipo: "CARRO/CAMIONETA", placa: "AB850MA", marca: "TERIOS", color: "GRIS", telefono: "0416-6209458" },
+      { apto: "302", propietario: "Marlin Rodriguez", tipo: "CARRO/CAMIONETA", placa: "RAH07F", marca: "COROLLA", color: "BEIGE", telefono: "0424-1801406" },
+      { apto: "302", propietario: "Marlin Rodriguez", tipo: "CARRO/CAMIONETA", placa: "AB487US", marca: "TUCSON", color: "AZUL", telefono: "0424-1801406" },
+      { apto: "302", propietario: "Marlin Rodriguez", tipo: "MOTO", placa: "AL3T145", marca: "EMPIRE RK 200", color: "NEGRO", telefono: "0424-1801406" },
+      { apto: "303", propietario: "Ludmila Garanton", tipo: "CARRO/CAMIONETA", placa: "BCC771", marca: "GRAND VITARA", color: "AZUL", telefono: "0424-1743309" },
+      { apto: "305", propietario: "Mariano", tipo: "CARRO/CAMIONETA", placa: "YBK112", marca: "TOYOTA COROLLA", color: "VERDE", telefono: "0414-2490032" },
+      { apto: "305", propietario: "Mariano", tipo: "CARRO/CAMIONETA", placa: "MBH84Z", marca: "HONDA", color: "PLATEADO", telefono: "0414-2490032" },
+      { apto: "305", propietario: "Mariano", tipo: "MOTO", placa: "AK5K93E", marca: "HJ 150", color: "NEGRO", telefono: "0414-2490032" },
+      { apto: "402", propietario: "VICTOR GOMEZ", tipo: "CARRO/CAMIONETA", placa: "AA543FD", marca: "TERIOS", color: "AZUL", telefono: "0412-3356626" },
+      { apto: "405", propietario: "LUIS SOTO", tipo: "MOTO", placa: "AA9H92A", marca: "YAMAHA", color: "NEGRO", telefono: "0414-1819533" },
+      { apto: "405", propietario: "LUIS SOTO", tipo: "CARRO/CAMIONETA", placa: "AA538WO", marca: "TRAILBLAZER", color: "NEGRO", telefono: "0414-1819533" },
+      { apto: "406", propietario: "JAVIER", tipo: "CARRO/CAMIONETA", placa: "MBA18A", marca: "MITSUBISHI", color: "ROJO", telefono: "0412-9572826" },
+      { apto: "406", propietario: "JAVIER", tipo: "MOTO", placa: "AA1268K", marca: "EMPIRE SUPER SHADOW", color: "NEGRO", telefono: "0412-9572826" },
+      { apto: "501", propietario: "YERE COLMENARES", tipo: "CARRO/CAMIONETA", placa: "AA990CA", marca: "PEGEOUT", color: "", telefono: "0414-2716866" },
+      { apto: "501", propietario: "YERE COLMENARES", tipo: "CARRO/CAMIONETA", placa: "AA197RU", marca: "FORD FIESTA", color: "GRIS", telefono: "0414-2716866" },
+      { apto: "502", propietario: "Luis Lucas", tipo: "CARRO/CAMIONETA", placa: "DBY 97I", marca: "FORD ECO SPORT", color: "AZUL", telefono: "0412-6976181" },
+      { apto: "504", propietario: "JUANA MIJARES", tipo: "CARRO/CAMIONETA", placa: "JAS16X", marca: "HYUNDAY GETZ", color: "AZUL", telefono: "0412-6010586" },
+      { apto: "505", propietario: "Marieta", tipo: "CARRO/CAMIONETA", placa: "MFM19K", marca: "CALIVER", color: "GRIS", telefono: "0412-2985469" },
+      { apto: "505", propietario: "Marieta", tipo: "CARRO/CAMIONETA", placa: "VCF40X", marca: "AVEO", color: "PLATA", telefono: "0412-2985470" },
+      { apto: "505", propietario: "Marieta", tipo: "CARRO/CAMIONETA", placa: "BBN90E", marca: "GRAND VITARA", color: "PLATA", telefono: "0412-2985469" },
+      { apto: "506", propietario: "MANUEL GUEDEZ", tipo: "MOTO", placa: "A10P77E", marca: "BERA KAVAK", color: "ROJO", telefono: "4144014588" },
+      { apto: "601", propietario: "Any Herrera", tipo: "CARRO/CAMIONETA", placa: "AA588FN", marca: "TERIOS", color: "ROJO", telefono: "0414-2565792" },
+      { apto: "603", propietario: "YUDITH LOPEZ", tipo: "CARRO/CAMIONETA", placa: "AHI66ED", marca: "FIAT CRONOS", color: "PLATA", telefono: "" },
+      { apto: "604", propietario: "JHONATAN", tipo: "MOTO", placa: "AG4Y75T", marca: "EMPIRE OWEN", color: "AZUL", telefono: "0424-1287416" },
+      { apto: "605", propietario: "Luisa Quevedo", tipo: "CARRO/CAMIONETA", placa: "ACN03U", marca: "FIAT 147", color: "BEIGE", telefono: "0424-1729591" },
+      { apto: "605", propietario: "Luisa Quevedo", tipo: "CARRO/CAMIONETA", placa: "AB575LD", marca: "FORD ECO SPORT", color: "PLATA", telefono: "0424-1729591" },
+      { apto: "605", propietario: "Luisa Quevedo", tipo: "MOTO", placa: "AF4J76U", marca: "BERA R1", color: "ROJO", telefono: "0412-9008163" },
+      { apto: "701", propietario: "Felix Peña", tipo: "CARRO/CAMIONETA", placa: "APO56EB", marca: "TOYOTA CROSS", color: "BLANCO", telefono: "0414-2199726" },
+      { apto: "703", propietario: "Neptali Fernandez", tipo: "CARRO/CAMIONETA", placa: "AK150TA", marca: "ORINOCO", color: "BLANCO", telefono: "0416-6111694 / 0424-2208751" },
+      { apto: "703", propietario: "Neptali Fernandez", tipo: "CARRO/CAMIONETA", placa: "AH924CD", marca: "CROSS", color: "PLATEADO", telefono: "0416-6111694 / 0424-2208751" },
+      { apto: "703", propietario: "Neptali Fernandez", tipo: "CARRO/CAMIONETA", placa: "AA314BJ", marca: "YARIS", color: "AZUL", telefono: "0416-6111694 / 0424-2208751" },
+      { apto: "802", propietario: "YANETH SALAZAR", tipo: "CARRO/CAMIONETA", placa: "DAZ40T", marca: "TOYOTA COROLLA", color: "DORADO", telefono: "" },
+      { apto: "805", propietario: "No especificado", tipo: "MOTO", placa: "AX6166F", marca: "BERA KAVAK", color: "NEGRO", telefono: "" },
+      { apto: "901", propietario: "Valentin", tipo: "CARRO/CAMIONETA", placa: "AG872AA", marca: "FORD FIESTA", color: "AZUL", telefono: "0412-9702126" },
+      { apto: "901", propietario: "Valentin", tipo: "MOTO", placa: "AA7J65P", marca: "EMPIRE HORSEII", color: "AZUL", telefono: "0412-9702127" },
+      { apto: "902", propietario: "Lisbeth de Santamaria/Alfonzo Santamaria", tipo: "CARRO/CAMIONETA", placa: "AD226SS", marca: "AVEO", color: "NEGRO", telefono: "0424-2153592 / 0414-2047182" },
+      { apto: "902", propietario: "Lisbeth de Santamaria/Alfonzo Santamaria", tipo: "CARRO/CAMIONETA", placa: "AA346CD", marca: "EPICA", color: "VERDE", telefono: "0424-2153592 / 0414-2047182" },
+      { apto: "902", propietario: "Lisbeth de Santamaria/Alfonzo Santamaria", tipo: "MOTO", placa: "AJ4X44K", marca: "BERA", color: "AZUL", telefono: "0424-2153592 / 0414-2047182" },
+      { apto: "903", propietario: "Jonathan Arvelo", tipo: "CARRO/CAMIONETA", placa: "AI622CK", marca: "OPTRA", color: "GRIS", telefono: "0412-3178303" },
+      { apto: "903", propietario: "Jonathan Arvelo", tipo: "MOTO", placa: "AH2D82M", marca: "BERA VIPER", color: "GRIS", telefono: "0412-5382683" },
+      { apto: "904", propietario: "NAURY BRAVO", tipo: "CARRO/CAMIONETA", placa: "MEN55M", marca: "AVEO", color: "GRIS", telefono: "0414-1198212" },
+      { apto: "906", propietario: "Junior Jaimes", tipo: "CARRO/CAMIONETA", placa: "AF699FG", marca: "ORINOCO", color: "NEGRO", telefono: "0424-1692492" },
+      { apto: "1002", propietario: "Leiker Tortoza", tipo: "CARRO/CAMIONETA", placa: "AB962II", marca: "TOYOTA MACHITO", color: "BEIGE", telefono: "0414-2067070" },
+      { apto: "1002", propietario: "Leiker Tortoza", tipo: "MOTO", placa: "S/P AT3M38M", marca: "BERA", color: "NEGRO", telefono: "0414-2067070" },
+      { apto: "1003", propietario: "Jose Luis Luna", tipo: "CARRO/CAMIONETA", placa: "AA130MK", marca: "OPTRA", color: "GRIS", telefono: "0412-7348108" },
+      { apto: "1004", propietario: "Ulises Sojo", tipo: "CARRO/CAMIONETA", placa: "C0605T", marca: "DAEWOO", color: "CIELO", telefono: "0416-7184426" },
+      { apto: "1006", propietario: "EDITH", tipo: "CARRO/CAMIONETA", placa: "AF546SM", marca: "CHERY ARAUCA", color: "PLATA", telefono: "0412-2930511" },
+      { apto: "1102", propietario: "Maria Eugenia Peña", tipo: "CARRO/CAMIONETA", placa: "ACO38PD", marca: "EXPLORER", color: "BLANCO", telefono: "0424-1522118" },
+      { apto: "1103", propietario: "STEPHANY CORONADO", tipo: "CARRO/CAMIONETA", placa: "OAJ475", marca: "TOYOTA TERIOS", color: "PLATA", telefono: "0412-4306035" },
+      { apto: "1103", propietario: "STEPHANY CORONADO", tipo: "MOTO", placa: "AY9X45G", marca: "EMPIRE OUTLOOK", color: "BLANCO", telefono: "0412-4306036" },
+      { apto: "1104", propietario: "Neptali Vivas", tipo: "CARRO/CAMIONETA", placa: "ARC75C", marca: "MITSUBISHI", color: "GRIS", telefono: "0412-3760368" },
+      { apto: "1105", propietario: "ANGEL VILORIA", tipo: "MOTO", placa: "ALONE51E", marca: "BERA RUNNER", color: "NEGRO", telefono: "0412-9100126" },
+      { apto: "1203", propietario: "Francisco Franco", tipo: "CARRO/CAMIONETA", placa: "AK587BA", marca: "CHERY", color: "DORADO", telefono: "0424-2796406" },
+      { apto: "1203", propietario: "Francisco Franco", tipo: "MOTO", placa: "AK2L79D", marca: "HJ", color: "AMARILLA", telefono: "0424-2796406" },
+      { apto: "1204", propietario: "ARNALDO VALERA", tipo: "CARRO/CAMIONETA", placa: "AB965CI", marca: "CHEROKKE JEEP", color: "AZUL", telefono: "0412-6123215" },
+      { apto: "1206", propietario: "MARIETTA", tipo: "CARRO/CAMIONETA", placa: "CAF79X", marca: "TERIOS", color: "AZUL", telefono: "0424-1272650" },
+      { apto: "1303", propietario: "Ramses", tipo: "MOTO", placa: "AEOS45R", marca: "BERA RUNNER", color: "BLANCO", telefono: "0424-2387054" },
+      { apto: "1305", propietario: "No especificado", tipo: "MOTO", placa: "AR5Y24M", marca: "AVA JAGUAR", color: "FUCSIA", telefono: "" },
+      { apto: "1306", propietario: "DAILUBIS ZAMBRANO", tipo: "CARRO/CAMIONETA", placa: "AD4AB2A", marca: "SILVERADO", color: "NEGRO", telefono: "0414-1229437" },
+      { apto: "1306", propietario: "DAILUBIS ZAMBRANO", tipo: "CARRO/CAMIONETA", placa: "DAJ22J", marca: "COROLLA", color: "GRIS", telefono: "0414-1229437" },
+      { apto: "1306", propietario: "DAILUBIS ZAMBRANO", tipo: "CARRO/CAMIONETA", placa: "AK524AG", marca: "HYUNDAY EXCEL", color: "PLATA", telefono: "0414-1229438" },
+      { apto: "1402", propietario: "BRUNO/CAROLINA", tipo: "CARRO/CAMIONETA", placa: "AH165RM", marca: "CHERY ARAUCA", color: "PLATA", telefono: "0412-2948406" },
+      { apto: "1402", propietario: "BRUNO/CAROLINA", tipo: "CARRO/CAMIONETA", placa: "AI658FK", marca: "JEEP", color: "GRIS", telefono: "0412-7381703" },
+      { apto: "1402", propietario: "BRUNO/CAROLINA", tipo: "MOTO", placa: "AM8501N", marca: "EMPIRE RK 200", color: "NEGRO", telefono: "0412-4882233" },
+      { apto: "1403", propietario: "Jorge Morr", tipo: "CARRO/CAMIONETA", placa: "S/P", marca: "TUCSON", color: "NEGRO", telefono: "0412-4062959" },
+      { apto: "1403", propietario: "Jorge Morr", tipo: "MOTO", placa: "AW4F04V", marca: "BERA SBR", color: "AZUL", telefono: "0412-4062959" },
+      { apto: "1404", propietario: "Alba Villalobos", tipo: "CARRO/CAMIONETA", placa: "WAB-85N", marca: "FIAT PALIO", color: "PLATEADO", telefono: "0414-1634474 / 0416-8294581" },
+      { apto: "1405", propietario: "Luis Guevara", tipo: "MOTO", placa: "AH5176V", marca: "SKIGO SG150", color: "BLANCO", telefono: "0414-3391378" },
+      { apto: "1405", propietario: "Luis Guevara", tipo: "MOTO", placa: "AF6D61G", marca: "OUTLOOK", color: "AZUL", telefono: "0414-3391378" },
+      { apto: "1406", propietario: "Henry Garcia", tipo: "CARRO/CAMIONETA", placa: "AA761KL", marca: "HONDA CIVIC", color: "DORADO", telefono: "0412-9613485" },
+      { apto: "1501", propietario: "Jose Luis Salinas", tipo: "MOTO", placa: "AMBC55N", marca: "HORSE", color: "NEGRO", telefono: "0424-1805348" },
+      { apto: "1501", propietario: "Jose Luis Salinas", tipo: "MOTO", placa: "AABL91R", marca: "HORSE", color: "AZUL", telefono: "0424-1805348" },
+      { apto: "1503", propietario: "Gaby", tipo: "CARRO/CAMIONETA", placa: "A0722XB", marca: "RENAULT LOGAN", color: "PLATA", telefono: "0412-8225214" },
+      { apto: "1503", propietario: "IKEL", tipo: "CARRO/CAMIONETA", placa: "ATK958", marca: "DODGE ASPEN", color: "BLANCO", telefono: "" },
+      { apto: "1604", propietario: "María González", tipo: "CARRO/CAMIONETA", placa: "AC808HS", marca: "YARIS", color: "PLATEADO", telefono: "0426-3124322" },
+      { apto: "1605", propietario: "Jorge Rivas", tipo: "CARRO/CAMIONETA", placa: "AE076UV", marca: "FIAT", color: "GRIS", telefono: "0424-1679997" },
+      { apto: "1605", propietario: "Evelin Andrade de R", tipo: "CARRO/CAMIONETA", placa: "AF839JK", marca: "MAZDA", color: "VERDE", telefono: "0414-3899556" },
+      { apto: "1606", propietario: "Olga Torres", tipo: "CARRO/CAMIONETA", placa: "AA152JD", marca: "FIESTA POWER", color: "AZUL", telefono: "0414-9146271" }
+    ];
+
+    window.cargarCensoInicial = async () => {
+      const actuales = await getDocs(colRef);
+      if (!actuales.empty) {
+        if (!confirm(`Ya hay ${actuales.size} registros en la base. ¿Deseas agregar los 87 del censo de octubre 2026 de todas formas?`)) return;
+      }
+      for (const item of CENSO_OCTUBRE_2026) {
+        await addDoc(colRef, item);
+      }
+      alert("¡Censo de 87 vehículos cargado en Firestore!");
+    };
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
